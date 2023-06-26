@@ -12,29 +12,32 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.server.ResponseStatusException;
 
 @BasePathAwareController(path = "rooms")
-public class RoomController {
+public class RoomController extends ParentController<Room> {
 
-    private final RoomService roomService;
+    private final RoomService service;
 
     @Autowired
-    public RoomController(RoomService roomService) {
-        this.roomService = roomService;
+    protected RoomController(RoomService service) {
+        super(service);
+        this.service = service;
     }
 
     @PostMapping
-    public ResponseEntity<Room> addRoom(@RequestBody RoomRequest req) {
+    public ResponseEntity post(@RequestBody RoomRequest req) {
         try {
-            return new ResponseEntity<>(roomService.addRoom(req.getRowsAmount(), req.getSeatsPerRow()), HttpStatus.OK);
+            return ResponseEntity.ok(service.create(req.getRowsAmount(), req.getSeatsPerRow()));
         } catch (LimitReachedException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Maximum number of rooms already created.");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                                 .body(e.getMessage());
         }
     }
 
+    @Override
     @DeleteMapping()
     public @ResponseBody void deleteAll() {
-        roomService.deleteAll();
+        service.deleteAll();
     }
+
 }

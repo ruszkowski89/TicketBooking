@@ -10,11 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class RoomServiceTest {
@@ -34,7 +32,7 @@ public class RoomServiceTest {
 
         Mockito.when(repo.findAll()).thenReturn(new ArrayList<>());
 
-        cut.addRoom(rows, seatsPerRow);
+        cut.create(rows, seatsPerRow);
 
         Mockito.verify(repo).save(new Room(rows, seatsPerRow));
     }
@@ -46,12 +44,9 @@ public class RoomServiceTest {
 
         Mockito.when(repo.findAll()).thenReturn(new ArrayList<>());
 
-        Room room = cut.addRoom(rows, seatsPerRow);
+        Room room = cut.create(rows, seatsPerRow);
 
-        assertTrue(
-                Arrays.stream(room.getRows())
-                      .allMatch(r -> r.getSeats().length == 10)
-        );
+        room.getRows().forEach(r -> assertEquals(10, r.getSeats().size()));
     }
 
     @Test
@@ -68,7 +63,7 @@ public class RoomServiceTest {
 
         assertThrows(
                 LimitReachedException.class,
-                () -> cut.addRoom(rows, seatsPerRow)
+                () -> cut.create(rows, seatsPerRow)
         );
     }
 

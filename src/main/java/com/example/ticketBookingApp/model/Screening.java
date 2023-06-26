@@ -1,17 +1,23 @@
 package com.example.ticketBookingApp.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @RedisHash
-public class Screening {
-    @Id
-    private String id;
+public class Screening extends DBModel {
     private Movie movie;
-    private Date date;
+    private LocalDateTime dateTime;
+    @Indexed
     private Room room;
+
 }
