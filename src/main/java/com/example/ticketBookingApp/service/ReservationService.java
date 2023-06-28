@@ -6,7 +6,6 @@ import com.example.ticketBookingApp.exception.SeatAlreadyReservedException;
 import com.example.ticketBookingApp.model.*;
 import com.example.ticketBookingApp.model.request.ReservationRequest;
 import com.example.ticketBookingApp.repository.CustomRepository;
-import org.apache.commons.lang3.stream.Streams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,7 +39,7 @@ public class ReservationService extends ParentService<Reservation> {
         Price price = new Price(PriceCalculator.calculate(tickets));
         Reservation reservation = new Reservation(person, screening, tickets, expirationTime, price);
 
-        Streams.stream(tickets).forEach(t -> changeReservation(screening.getRoom(), t.getRowNum(), t.getSeatNum(), true));
+        tickets.forEach(t -> changeReservation(screening.getRoom(), t.getRowNum(), t.getSeatNum(), true));
         roomService.update(screening.getRoom());
 
         setIdSequence(reservation);
@@ -89,7 +88,7 @@ public class ReservationService extends ParentService<Reservation> {
         Screening screening = r.getScreening();
         Room room = screening.getRoom();
         var tickets = r.getTickets();
-        Streams.stream(tickets).forEach(t -> changeReservation(room, t.getRowNum(), t.getSeatNum(), false));
+        tickets.forEach(t -> changeReservation(room, t.getRowNum(), t.getSeatNum(), false));
         roomService.update(room);
         repo.delete(r);
     }
