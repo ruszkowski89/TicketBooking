@@ -2,6 +2,7 @@ package com.example.ticketBookingApp.controller;
 
 import com.example.ticketBookingApp.exception.EntityNotFoundException;
 import com.example.ticketBookingApp.model.Screening;
+import com.example.ticketBookingApp.model.request.ScreeningGetRequest;
 import com.example.ticketBookingApp.model.request.ScreeningPostRequest;
 import com.example.ticketBookingApp.service.ScreeningService;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
@@ -42,5 +43,8 @@ public class ScreeningController extends ParentController<Screening> {
         }
     }
 
-
+    @GetMapping(path = "timeSlot")
+    public ResponseEntity getScreeningsForTimeSlot(@RequestBody ScreeningGetRequest req) {
+        return ResponseEntity.ok(service.getScreeningsForTimeSlot(req.getFrom(), req.getTo()));
+    }
 }

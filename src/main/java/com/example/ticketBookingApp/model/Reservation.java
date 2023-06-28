@@ -1,24 +1,31 @@
 package com.example.ticketBookingApp.model;
 
+import com.example.ticketBookingApp.model.request.ReservationRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
+
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @RedisHash
 public class Reservation extends DBModel {
-    private String name;
+    private Person person;
     private Screening screening;
-    private int rowNum;
-    private int seatNum;
+    private Set<ReservationRequest.TicketDetails> tickets;
+    private LocalDateTime expirationTime;
+    private Price price;
 
-    public Reservation(String name, Screening screening, int rowNum, int seatNum) {
-        this.name = name;
+    public Reservation(Person person, Screening screening, Set<ReservationRequest.TicketDetails> tickets,
+                       LocalDateTime expirationTime, Price price) {
+        this.person = person;
         this.screening = screening;
-        this.rowNum = rowNum;
-        this.seatNum = seatNum;
+        this.tickets = tickets;
+        this.expirationTime = expirationTime;
+        this.price = price;
     }
 }

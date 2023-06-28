@@ -1,7 +1,6 @@
 package com.example.ticketBookingApp.model;
 
 import com.example.ticketBookingApp.service.RowService;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,6 @@ import java.util.Set;
 @RedisHash
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Room extends DBModel {
     private Set<Row> rows;
 

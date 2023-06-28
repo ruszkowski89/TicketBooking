@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ScreeningService extends ParentService<Screening> {
@@ -45,10 +47,15 @@ public class ScreeningService extends ParentService<Screening> {
                             .orElseThrow(() -> new EntityNotFoundException("screening", screeningId));
     }
 
-/*    public void deleteScreeningsForRoom(int roomId) {
-        List<Screening> screenings = screeningRepo.findByRoomId(roomId);
-        screenings.forEach(repo::delete);
-    }*/
+    //  TODO: this method is not efficient, because screenings should be already filtered in DB query,
+    //   however for this small app I'll leave it as it is
+    public List<Screening> getScreeningsForTimeSlot(LocalDateTime from, LocalDateTime to) {
+
+        return screeningRepo.findAll().stream()
+                .filter(s -> s.getDateTime().isAfter(from.minusSeconds(1)) && s.getDateTime().isBefore(to.plusSeconds(1)))
+                .sorted()
+                .collect(Collectors.toList());
+    }
 
     public Set<Row> getSeats(long screeningId) throws EntityNotFoundException {
         return find(screeningId).getRoom()

@@ -5,13 +5,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RowServiceTest {
+public class SeatServiceTest {
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 3, 5, 225})
-    public void testCreateRows(int input) {
-        var rows = RowService.createRows(input, input);
+    @ValueSource(ints = {1, 3, 5, 154})
+    public void testCreateSeats(int input) {
+        var seats = SeatService.createSeats(input);
 
-        assertEquals(input, rows.size());
+        assertEquals(input, seats.size());
     }
+
 }

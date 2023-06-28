@@ -1,6 +1,6 @@
 package com.example.ticketBookingApp.model;
 
-import com.example.ticketBookingApp.service.RowService;
+import com.example.ticketBookingApp.service.SeatService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +14,6 @@ public class Row {
 
     public Row(int rowNum, int seatsPerRow) {
         this.rowNum = rowNum;
-        this.seats = RowService.createSeats(seatsPerRow);
+        this.seats = SeatService.createSeats(seatsPerRow);
     }
 }
