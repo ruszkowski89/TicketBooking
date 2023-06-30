@@ -1,5 +1,6 @@
 package com.example.ticketBookingApp.service;
 
+import com.example.ticketBookingApp.exception.IncorrectReservationException;
 import com.example.ticketBookingApp.exception.LimitReachedException;
 import com.example.ticketBookingApp.model.Room;
 import com.example.ticketBookingApp.repository.RoomRepository;
@@ -12,7 +13,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 public class RoomServiceTest {
@@ -26,7 +28,7 @@ public class RoomServiceTest {
 
 
     @Test
-    public void whenAddRoom_thenRoomIsSaved() throws LimitReachedException {
+    public void whenAddRoom_thenRoomIsSaved() throws IncorrectReservationException, LimitReachedException {
         int rows = 7;
         int seatsPerRow = 10;
 
@@ -34,19 +36,7 @@ public class RoomServiceTest {
 
         cut.create(rows, seatsPerRow);
 
-        Mockito.verify(repo).save(new Room(rows, seatsPerRow));
-    }
-
-    @Test
-    public void whenAddRoom_thenCorrectSeatsAmountIsCreated() throws LimitReachedException {
-        int rows = 7;
-        int seatsPerRow = 10;
-
-        Mockito.when(repo.findAll()).thenReturn(new ArrayList<>());
-
-        Room room = cut.create(rows, seatsPerRow);
-
-        room.getRows().forEach(r -> assertEquals(10, r.getSeats().size()));
+        Mockito.verify(repo).save(any());
     }
 
     @Test

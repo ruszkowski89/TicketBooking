@@ -36,7 +36,7 @@ public class ScreeningController extends ParentController<Screening> {
     @GetMapping(path = "seats/{screeningId}")
     public ResponseEntity getSeats(@PathVariable long screeningId) {
         try {
-            return ResponseEntity.ok(service.getSeats(screeningId));
+            return ResponseEntity.ok(service.getRows(screeningId));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());

@@ -14,7 +14,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -57,7 +56,7 @@ public class ScreeningService extends ParentService<Screening> {
                 .collect(Collectors.toList());
     }
 
-    public Set<Row> getSeats(long screeningId) throws EntityNotFoundException {
+    public Row[] getRows(long screeningId) throws EntityNotFoundException {
         return find(screeningId).getRoom()
                                 .getRows();
     }

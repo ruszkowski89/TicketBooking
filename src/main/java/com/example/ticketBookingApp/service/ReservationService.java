@@ -1,11 +1,10 @@
 package com.example.ticketBookingApp.service;
 
 import com.example.ticketBookingApp.exception.EntityNotFoundException;
-import com.example.ticketBookingApp.exception.ItsTooLateException;
-import com.example.ticketBookingApp.exception.SeatAlreadyReservedException;
+import com.example.ticketBookingApp.exception.IncorrectReservationException;
 import com.example.ticketBookingApp.model.*;
 import com.example.ticketBookingApp.model.request.ReservationRequest;
-import com.example.ticketBookingApp.repository.CustomRepository;
+import com.example.ticketBookingApp.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +21,7 @@ public class ReservationService extends ParentService<Reservation> {
     private final RoomService roomService;
 
     @Autowired
-    public ReservationService(CustomRepository<Reservation> repo, RedisTemplate<String, Object> redisTemplate,
+    public ReservationService(ReservationRepository repo, RedisTemplate<String, Object> redisTemplate,
                               ScreeningService screeningService, RoomService roomService) {
         super(repo, redisTemplate);
         this.screeningService = screeningService;
@@ -30,40 +29,30 @@ public class ReservationService extends ParentService<Reservation> {
     }
 
     @Transactional
-    public Reservation create(Person person, long screeningId, Set<ReservationRequest.TicketDetails> tickets)
-            throws EntityNotFoundException, SeatAlreadyReservedException, ItsTooLateException {
+    public Reservation createReservation(Person person, long screeningId, Set<ReservationRequest.TicketDetails> tickets)
+            throws EntityNotFoundException, IncorrectReservationException {
         Screening screening = screeningService.find(screeningId);
         verifyIfStillCanBeReserved(screening.getDateTime());
 
-        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(15);
+        roomService.updateRoom(tickets, screening);
+
+        LocalDateTime expirationTime = getExpirationTime();
         Price price = new Price(PriceCalculator.calculate(tickets));
         Reservation reservation = new Reservation(person, screening, tickets, expirationTime, price);
-
-        tickets.forEach(t -> changeReservation(screening.getRoom(), t.getRowNum(), t.getSeatNum(), true));
-        roomService.update(screening.getRoom());
-
         setIdSequence(reservation);
         return repo.save(reservation);
     }
 
-    private void changeReservation(Room room, int rowNum, int seatNum, boolean setSeatTaken) throws EntityNotFoundException, SeatAlreadyReservedException {
-        Row row = room.getRows().stream()
-                .filter(r -> r.getRowNum() == rowNum)
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("row", rowNum));
 
-        Seat seat = row.getSeats().stream()
-                .filter(s -> s.getSeatNum() == seatNum)
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("seat", seatNum));;
 
-        seat.setTaken(setSeatTaken);
+    private static LocalDateTime getExpirationTime() {
+        return LocalDateTime.now().plusMinutes(15);
     }
 
-    private static void verifyIfStillCanBeReserved(LocalDateTime screeningTime) throws ItsTooLateException {
+    private static void verifyIfStillCanBeReserved(LocalDateTime screeningTime) throws IncorrectReservationException {
         LocalDateTime timeLimit = screeningTime.minusMinutes(15);
         if (LocalDateTime.now().isAfter(timeLimit)) {
-            throw new ItsTooLateException();
+            throw new IncorrectReservationException("Seats can be booked at latest 15 minutes before the screening begins.");
         }
     }
 
@@ -88,7 +77,11 @@ public class ReservationService extends ParentService<Reservation> {
         Screening screening = r.getScreening();
         Room room = screening.getRoom();
         var tickets = r.getTickets();
-        tickets.forEach(t -> changeReservation(room, t.getRowNum(), t.getSeatNum(), false));
+        tickets.forEach(t -> {
+            room.getRows()[t.getRowNum()]
+                .getSeats()[t.getSeatNum()]
+                .setTaken(false);
+        });
         roomService.update(room);
         repo.delete(r);
     }

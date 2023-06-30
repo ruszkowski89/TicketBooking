@@ -29,6 +29,6 @@ public class ReservationRequest {
         private int rowNum;
         @Positive
         private int seatNum;
-        private TicketType ticketType;
+        private TicketType ticketType = TicketType.ADULT;
     }
 }

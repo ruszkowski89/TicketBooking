@@ -12,7 +12,7 @@ public class SeatServiceTest {
     public void testCreateSeats(int input) {
         var seats = SeatService.createSeats(input);
 
-        assertEquals(input, seats.size());
+        assertEquals(input, seats.length);
     }
 
 }

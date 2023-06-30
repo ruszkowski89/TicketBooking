@@ -2,10 +2,16 @@ package com.example.ticketBookingApp.service;
 
 import com.example.ticketBookingApp.exception.LimitReachedException;
 import com.example.ticketBookingApp.model.Room;
+import com.example.ticketBookingApp.model.Screening;
+import com.example.ticketBookingApp.model.request.ReservationRequest;
 import com.example.ticketBookingApp.repository.CustomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import java.util.Set;
+
+import static com.example.ticketBookingApp.service.RowService.updateRows;
 
 @org.springframework.stereotype.Service
 public class RoomService extends ParentService<Room> {
@@ -28,6 +34,12 @@ public class RoomService extends ParentService<Room> {
         Room room = new Room(rowsAmount, seatsPerRow);
         setIdSequence(room);
         return repo.save(room);
+    }
+
+    protected void updateRoom(Set<ReservationRequest.TicketDetails> tickets, Screening screening) {
+        Room room = screening.getRoom();
+        updateRows(room.getRows(), tickets);
+        update(room);
     }
 
     public Room update(Room room) {

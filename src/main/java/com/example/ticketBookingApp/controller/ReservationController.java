@@ -1,8 +1,7 @@
 package com.example.ticketBookingApp.controller;
 
 import com.example.ticketBookingApp.exception.EntityNotFoundException;
-import com.example.ticketBookingApp.exception.ItsTooLateException;
-import com.example.ticketBookingApp.exception.SeatAlreadyReservedException;
+import com.example.ticketBookingApp.exception.IncorrectReservationException;
 import com.example.ticketBookingApp.model.Reservation;
 import com.example.ticketBookingApp.model.request.ReservationRequest;
 import com.example.ticketBookingApp.service.ReservationService;
@@ -29,10 +28,10 @@ public class ReservationController extends ParentController<Reservation> {
     public ResponseEntity post(@RequestBody ReservationRequest req) {
         try {
             validator.validate(req);
-            return ResponseEntity.ok(service.create(req.getPerson(), req.getScreeningId(), req.getTickets()));
+            return ResponseEntity.ok(service.createReservation(req.getPerson(), req.getScreeningId(), req.getTickets()));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (SeatAlreadyReservedException | ItsTooLateException e) {
+        } catch (IncorrectReservationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (ConstraintViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

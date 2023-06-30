@@ -12,6 +12,6 @@ public class RowServiceTest {
     public void testCreateRows(int input) {
         var rows = RowService.createRows(input, input);
 
-        assertEquals(input, rows.size());
+        assertEquals(input, rows.length);
     }
 }
