@@ -69,18 +69,20 @@ class ReservationServiceTest {
 
     @Test
     void whenScreeningIsIn10Minutes_thenIncorrectReservationExceptionIsThrown() {
+        long screeningId = screening.getId();
         screening.setDateTime(LocalDateTime.now().plusMinutes(10));
-        assertThrows(IncorrectReservationException.class, () -> cut.createReservation(person, screening.getId(), tickets, ""));
+        assertThrows(IncorrectReservationException.class, () -> cut.createReservation(person, screeningId, tickets, ""));
     }
 
     @Test
     void whenThereIsOneSeatLeftBetweenReservedSeats_thenIncorrectReservationExceptionIsThrown() {
+        long screeningId = screening.getId();
         var ticket2 = new ReservationRequest.TicketDetails();
         ticket2.setRowNum(3);
         ticket2.setSeatNum(5);
         tickets.add(ticket2);
 
         screening.setDateTime(LocalDateTime.now().plusMinutes(10));
-        assertThrows(IncorrectReservationException.class, () -> cut.createReservation(person, screening.getId(), tickets, ""));
+        assertThrows(IncorrectReservationException.class, () -> cut.createReservation(person, screeningId, tickets, ""));
     }
 }

@@ -5,14 +5,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 public class ParentController<T> {
-    protected final ParentService<T> service;
+    protected final ParentService<T> parentService;
 
-    public ParentController(ParentService<T> service) {
-        this.service = service;
+    public ParentController(ParentService<T> parentService) {
+        this.parentService = parentService;
     }
 
     @DeleteMapping()
     public @ResponseBody void deleteAll() {
-        service.deleteAll();
+        parentService.deleteAll();
     }
 }
