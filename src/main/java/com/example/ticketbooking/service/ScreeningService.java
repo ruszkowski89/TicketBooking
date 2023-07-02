@@ -48,7 +48,6 @@ public class ScreeningService extends ParentService<Screening> {
     //   note: this method is not efficient, because screenings should be already filtered in DB query,
     //   however for this small app I'll leave it as it is
     public List<Screening> getScreeningsForTimeSlot(LocalDateTime from, LocalDateTime to) {
-
         return screeningRepo.findAll().stream()
                 .filter(s -> s.getDateTime().isAfter(from.minusSeconds(1)) && s.getDateTime().isBefore(to.plusSeconds(1)))
                 .sorted()
@@ -58,5 +57,9 @@ public class ScreeningService extends ParentService<Screening> {
     public List<Row> getRows(long screeningId) throws EntityNotFoundException {
         return find(screeningId).getRoom()
                                 .getRows();
+    }
+
+    static boolean startsInLessThan15Mins(Screening screening) {
+        return screening.getDateTime().isAfter(LocalDateTime.now().minusMinutes(15));
     }
 }

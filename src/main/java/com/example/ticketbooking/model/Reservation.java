@@ -21,6 +21,7 @@ public class Reservation extends DBModel {
     private Set<ReservationRequest.TicketDetails> tickets;
     private LocalDateTime expirationTime;
     private Price price;
+    // It would be better to create 2nd Reservation object, without confirmationLink parameter for Database Storage
     @Transient
     private URI confirmationLink;
     private boolean confirmed;

@@ -3,7 +3,6 @@ package com.example.ticketbooking.service;
 import com.example.ticketbooking.exception.EntityNotFoundException;
 import com.example.ticketbooking.exception.IncorrectReservationException;
 import com.example.ticketbooking.model.*;
-import com.example.ticketbooking.model.request.ReservationRequest;
 import com.example.ticketbooking.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static com.example.ticketbooking.model.request.ReservationRequest.TicketDetails;
+import static com.example.ticketbooking.service.ScreeningService.startsInLessThan15Mins;
 
 @org.springframework.stereotype.Service
 public class ReservationService extends ParentService<Reservation> {
@@ -30,7 +31,7 @@ public class ReservationService extends ParentService<Reservation> {
     }
 
     @Transactional
-    public Reservation createReservation(Person person, long screeningId, Set<ReservationRequest.TicketDetails> tickets, String reqPath)
+    public Reservation createReservation(Person person, long screeningId, Set<TicketDetails> tickets, String reqPath)
             throws EntityNotFoundException, IncorrectReservationException {
         Screening screening = screeningService.find(screeningId);
         verifyIfStillCanBeReserved(screening.getDateTime());
@@ -63,15 +64,15 @@ public class ReservationService extends ParentService<Reservation> {
     }
 
     @Scheduled(timeUnit = TimeUnit.MINUTES, fixedRate = 1, initialDelay = 1)
-    public void expireReservations() {
+    public void cancelReservations() {
         repo.findAll().stream()
-            .filter(r -> LocalDateTime.now().isAfter(r.getExpirationTime()))
+            .filter(r -> !r.isConfirmed())
+            .filter(r -> isExpired(r) || startsInLessThan15Mins(r.getScreening()))
             .forEach(this::deleteReservation);
     }
 
-    public void cancelReservation(long id) {
-        Optional<Reservation> reservation = repo.findById(id);
-        reservation.ifPresent(this::deleteReservation);
+    private boolean isExpired(Reservation reservation) {
+        return LocalDateTime.now().isAfter(reservation.getExpirationTime());
     }
 
     @Override
@@ -82,13 +83,16 @@ public class ReservationService extends ParentService<Reservation> {
     private void deleteReservation(Reservation r) {
         Screening screening = r.getScreening();
         Room room = screening.getRoom();
-        var tickets = r.getTickets();
-        tickets.forEach(t ->
-            room.getRows().get(t.getRowNum())
-                .getSeats().get(t.getSeatNum())
-                .setTaken(false)
-        );
-        roomService.update(room);
+        if (room != null) {
+            var tickets = r.getTickets();
+            tickets.forEach(t ->
+                    room.getRows().get(t.getRowNum())
+                            .getSeats().get(t.getSeatNum())
+                            .setTaken(false)
+            );
+            roomService.update(room);
+        }
+
         repo.delete(r);
     }
 
